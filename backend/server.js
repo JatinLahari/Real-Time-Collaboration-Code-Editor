@@ -2,13 +2,32 @@ import express from "express";
 import { Server } from "socket.io";
 import http from "http";
 import dotenv from "dotenv";
-import ACTIONS from "../frontend/src/Actions.js";
+import path from "path";
+import { fileURLToPath } from "url";
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
-
 const server = http.createServer(app);
-
 const io = new Server(server);
+
+const buildPath = path.join(__dirname, '../frontend/build');
+app.use(express.static(buildPath));
+
+app.use((req,res,next)=>{
+  res.sendFile(path.join(buildPath, 'index.html'));
+});
+
+const ACTIONS = {
+  JOIN: 'join',
+  JOINED: 'joined',
+  DISCONNECTED: 'disconnected',
+  CODE_CHANGE: 'code-change',
+  SYNC_CODE: 'sync-code',
+  LEAVE: 'leave',
+};
+
 const userSocketMap = {};
 
 function getAllConnectedClients(roomId) {
